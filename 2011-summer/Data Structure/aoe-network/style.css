@@ -1,0 +1,67 @@
+* { margin: 0; padding: 0; border: 0 none; outline: 0; }
+body { font: 14px sans-serif; }
+
+canvas { position: absolute; top: 0; left: 0; }
+
+selection {
+    display: none;
+    position: absolute;
+    border: 1px solid rgba(30, 144, 255, .2);
+    background-color: rgba(30, 144, 255, .2);
+}
+
+tips {
+    display: none;
+    position: absolute;
+    font: 13px sans-serif;
+    padding: 2px 8px 2px 5px;
+    border: 1px solid #FFDF33;
+    background-color: #FFFCE1;
+    box-shadow: 0 0 8px 3px rgba(128, 128, 128, .4);
+}
+
+toolbar {
+    display: block;
+    width: 64px;
+    position: absolute;
+    top: 0; left: 0;
+}
+
+toolbar button { 
+    text-indent: -900em;
+    height: 96px; width: 96px;
+    background: transparent url(images/toolbar_icons.png) no-repeat;
+}
+
+toolbar button#add_new  { background-position: 0px 0px; }
+toolbar button#delete   { background-position: -96px 0px; }
+toolbar button#edit     { background-position: -192px 0px; }
+toolbar button#act_from { background-position: -288px 0px; }
+toolbar button#act_to   { background-position: -384px 0px; }
+
+toolbar button#add_new:hover  { background-position: 0px -96px; }
+toolbar button#delete:hover   { background-position: -96px -96px; }
+toolbar button#edit:hover     { background-position: -192px -96px; }
+toolbar button#act_from:hover { background-position: -288px -96px; }
+toolbar button#act_to:hover   { background-position: -384px -96px; }
+
+toolbar button#add_new.active  { background-position: 0px -96px; }
+toolbar button#act_from.active { background-position: -288px -96px; }
+toolbar button#act_to.active   { background-position: -384px -96px; }
+
+toolbar button#delete:disabled   { background-position: -96px -192px; }
+toolbar button#edit:disabled     { background-position: -192px -192px; }
+toolbar button#act_from:disabled { background-position: -288px -192px; }
+toolbar button#act_to:disabled   { background-position: -384px -192px; }
+
+footer {
+    position: absolute;
+    bottom: 0; right: 0;
+    padding: 5px 8px;
+    text-align: right;
+    font: 12px sans-serif;
+    color: #666666;
+}
+
+footer a { color: #999999; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
