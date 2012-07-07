@@ -1,3 +1,6 @@
 [submodule "2012-spring/Web Technology/white"]
 	path = 2012-spring/Web Technology/white
 	url = git@github.com:upsuper/white.git
+[submodule "2012-summer/Database System/udiscuss"]
+	path = 2012-summer/Database System/udiscuss
+	url = git@github.com:upsuper/udiscuss.git
