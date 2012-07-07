@@ -1,0 +1,12 @@
+PROGRAM gcd
+VAR a, b, t;
+BEGIN
+    a := 252;
+    b := 105;
+    WHILE b <> 0 DO
+    BEGIN
+        t := b;
+        b := a % b;
+        a := t;
+    END
+END
