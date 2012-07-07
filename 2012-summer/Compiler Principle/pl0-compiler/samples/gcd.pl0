@@ -1,8 +1,9 @@
 PROGRAM gcd
+CONST x = 252, y = 147;
 VAR a, b, t;
 BEGIN
-    a := 252;
-    b := 105;
+    a := x;
+    b := x - y;
     WHILE b <> 0 DO
     BEGIN
         t := b;

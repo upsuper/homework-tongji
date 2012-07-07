@@ -161,6 +161,8 @@ var PL0_SYNTAX = {
                     result = t1p.slice(1) * fp.slice(1);
                 else if (op === '/')
                     result = t1p.slice(1) / fp.slice(1);
+                else if (op === '%')
+                    result = t1p.slice(1) % fp.slice(1);
                 t.$.place = '$' + result;
             } else {
                 t.$.place = '%' + this.newtemp();
