@@ -3,4 +3,4 @@
 #
 
 obj-m := v6fs.o
-v6fs-objs := inode.o block.o file.o dir.o
+v6fs-objs := super.o inode.o address.o block.o file.o dir.o
