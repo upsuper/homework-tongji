@@ -1,0 +1,8 @@
+PROGRAM add
+VAR x, y;
+BEGIN
+    x := 1;
+    y := 2;
+    IF 1 + 1 <= 2 * 100 THEN
+        y := y - 1
+END

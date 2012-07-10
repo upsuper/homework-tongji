@@ -223,18 +223,35 @@ var PL0_SYNTAX = {
             e.$.falselist = [this.nextquad];
             this.emit('j', null, null, 0);
             */
+            var e1p = e1.$.place, e2p = e2.$.place;
             e.$.truelist = [];
-            var nop;
-            switch (op.text) {
-                case '=': nop = '<>'; break;
-                case '<>': nop = '='; break;
-                case '<': nop = '>='; break;
-                case '>': nop = '<='; break;
-                case '<=': nop = '>'; break;
-                case '>=': nop = '<'; break;
-            }
             e.$.falselist = [this.nextquad];
-            this.emit('j' + nop, e1.$.place, e2.$.place, 0);
+            if (e1p[0] === '$' && e2p[0] === '$') {
+                var e1n = parseInt(e1p.slice(1)),
+                    e2n = parseInt(e2p.slice(1));
+                var result;
+                switch (op.text) {
+                    case '=':   result = (e1n === e2n); break;
+                    case '<>':  result = (e1n !== e2n); break;
+                    case '<':   result = (e1n < e2n);   break;
+                    case '>':   result = (e1n > e2n);   break;
+                    case '<=':  result = (e1n <= e2n);  break;
+                    case '>=':  result = (e1n >= e2n);  break;
+                }
+                if (!result)
+                    this.emit('j', null, null, 0);
+            } else {
+                var rop;
+                switch (op.text) {
+                    case '=':   rop = '<>'; break;
+                    case '<>':  rop = '=';  break;
+                    case '<':   rop = '>='; break;
+                    case '>':   rop = '<='; break;
+                    case '<=':  rop = '>';  break;
+                    case '>=':  rop = '<';  break;
+                }
+                this.emit('j' + rop, e1p, e2p, 0);
+            }
         }
     }],
     /*

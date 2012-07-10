@@ -3,7 +3,7 @@ var Frontend = require('./core/frontend.js').Frontend,
     pl0 = require('./core/pl0.js');
 
 var frontend = new Frontend(pl0.syntax, pl0.ignore, pl0.start);
-var code = fs.readFileSync('samples/gcd.pl0', 'utf8');
+var code = fs.readFileSync('samples/add2.pl0', 'utf8');
 var result;
 try {
     result = frontend.translate(code);
