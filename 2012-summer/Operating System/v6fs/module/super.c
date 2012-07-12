@@ -10,12 +10,12 @@ static struct kmem_cache * v6fs_inode_cachep;
 
 static struct inode *v6fs_alloc_inode(struct super_block *sb)
 {
-	struct v6fs_inode_info * ei;
-	ei = (struct v6fs_inode_info *)
+	struct v6fs_inode_info * vi;
+	vi = (struct v6fs_inode_info *)
 		kmem_cache_alloc(v6fs_inode_cachep, GFP_KERNEL);
-	if (!ei)
+	if (!vi)
 		return NULL;
-	return &ei->vfs_inode;
+	return &vi->vfs_inode;
 }
 
 static void v6fs_i_callback(struct rcu_head *head)
@@ -118,6 +118,7 @@ static int v6fs_fill_super(struct super_block *sb, void *data, int silent)
 	sb->s_fs_info = sbi;
 
 	BUILD_BUG_ON(32 != sizeof(struct v6fs_inode));
+	BUILD_BUG_ON(16 != sizeof(struct v6fs_dirent));
 
 	if (!sb_set_blocksize(sb, V6FS_BLOCK_SIZE))
 		goto out_bad_hblock;
@@ -132,6 +133,9 @@ static int v6fs_fill_super(struct super_block *sb, void *data, int silent)
 	sbi->s_fsize	= vs->s_fsize;
 	sbi->s_nfree	= vs->s_nfree;
 	sbi->s_ninode	= vs->s_ninode;
+
+	mutex_init(&sbi->s_free_lock);
+	mutex_init(&sbi->s_inode_lock);
 
 	sb->s_maxbytes	= V6FS_FILESIZE_MAX;
 	sb->s_max_links	= V6FS_LINK_MAX;
@@ -191,9 +195,9 @@ static struct file_system_type v6fs_fs_type = {
 
 static void init_once(void *foo)
 {
-	struct v6fs_inode_info * ei = (struct v6fs_inode_info *) foo;
-	rwlock_init(&ei->i_meta_lock);
-	inode_init_once(&ei->vfs_inode);
+	struct v6fs_inode_info * vi = (struct v6fs_inode_info *) foo;
+	rwlock_init(&vi->i_meta_lock);
+	inode_init_once(&vi->vfs_inode);
 }
 
 static int init_inodecache(void)

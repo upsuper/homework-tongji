@@ -4,12 +4,20 @@
 #include <linux/fs.h>
 
 #define V6FS_MAGIC		0x2D9DF82C      /* some random number */
-#define V6FS_BLOCK_SIZE		512
+#define V6FS_BLOCK_SIZE_BITS	9
+#define V6FS_BLOCK_SIZE		(1 << V6FS_BLOCK_SIZE_BITS)
 #define V6FS_FILESIZE_MAX	((1 << 24) - 1)
 #define V6FS_LINK_MAX		((1 << 8) - 1)
 #define V6FS_FILENAME_MAX	14
+#define V6FS_INODE_SIZE		(sizeof(struct v6fs_inode))
+#define V6FS_INODE_PER_BLOCK	(V6FS_BLOCK_SIZE / V6FS_INODE_SIZE)
+#define V6FS_DIRENT_SIZE	(sizeof(struct v6fs_dirent))
 
 #define V6FS_ROOT_INO		1
+
+#define V6FS_INODE_BLOCK(n)	\
+	((((n) - 1) >> ilog2(V6FS_INODE_PER_BLOCK)) + 2)
+#define V6FS_INODE_OFFSET(n)	((n - 1) & (V6FS_INODE_PER_BLOCK - 1))
 
 #define V6FS_IALLOC	0100000
 #define V6FS_IFMT	060000
@@ -63,14 +71,16 @@ struct v6fs_sb_info {
 	unsigned int s_fsize;
 	unsigned int s_nfree;
 	unsigned int s_free[100];
+	struct mutex s_free_lock;
 	unsigned int s_ninode;
 	unsigned int s_inode[100];
+	struct mutex s_inode_lock;
 	struct buffer_head * s_sbh;
 	struct v6fs_super_block * s_vs;
 	unsigned short s_mount_state;
 };
 
-struct v6fs_dir_entry {
+struct v6fs_dirent {
 	__u16 inode;
 	char name[V6FS_FILENAME_MAX];
 };
@@ -78,7 +88,9 @@ struct v6fs_dir_entry {
 /* inode.c */
 extern struct inode *v6fs_iget(struct super_block *, unsigned long);
 extern int v6fs_write_inode(struct inode *, struct writeback_control *);
+extern struct inode *v6fs_new_inode(const struct inode *, umode_t);
 extern void v6fs_evict_inode(struct inode *);
+extern void v6fs_set_inode(struct inode *, dev_t);
 extern int v6fs_setsize(struct inode *, loff_t);
 extern int v6fs_count_free_inodes(struct super_block *); 
 /* block.c */

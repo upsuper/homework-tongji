@@ -12,24 +12,28 @@ typedef struct {
 
 long v6fs_new_block(struct inode *inode)
 {
-	// FIXME concurrency
 	struct super_block * sb = inode->i_sb;
 	struct v6fs_sb_info * sbi = v6fs_sb(sb);
-	long new_block;
+	block_t new_block = 0;
 
+	mutex_lock(&sbi->s_free_lock);
 	if (!sbi->s_nfree)
-		return 0;
-	new_block = sbi->s_free[--sbi->s_nfree];
+		goto out;
+	sbi->s_nfree--;
+	new_block = sbi->s_free[sbi->s_nfree];
+	sbi->s_free[sbi->s_nfree] = 0;
 	if (sbi->s_nfree == 0) {
 		struct buffer_head * bh;
-		__u16 * free_blocks;
+		block_t * free_blocks;
 		int i;
 
 		if (!new_block)
-			return 0;
+			goto out;
 
-		bh = sb_getblk(sb, new_block);
-		free_blocks = (__u16 *) bh->b_data;
+		bh = sb_bread(sb, new_block);
+		if (!bh)
+			goto out;
+		free_blocks = (block_t *) bh->b_data;
 		sbi->s_nfree = free_blocks[0];
 		for (i = 0; i < sbi->s_nfree; i++)
 			sbi->s_free[i] = free_blocks[i + 1];
@@ -37,15 +41,17 @@ long v6fs_new_block(struct inode *inode)
 	}
 	sb->s_dirt = 1;
 
-return new_block;
+out:
+	mutex_unlock(&sbi->s_free_lock);
+	return new_block;
 }
 
 void v6fs_free_block(struct inode *inode, block_t block)
 {
-	// FIXME concurrency
 	struct super_block * sb = inode->i_sb;
 	struct v6fs_sb_info * sbi = v6fs_sb(sb);
 
+	mutex_lock(&sbi->s_free_lock);
 	if (sbi->s_nfree == 100) {
 		struct buffer_head * bh;
 		__u16 * free_blocks;
@@ -61,6 +67,7 @@ void v6fs_free_block(struct inode *inode, block_t block)
 	}
 	sbi->s_free[sbi->s_nfree++] = block;
 	sb->s_dirt = 1;
+	mutex_unlock(&sbi->s_free_lock);
 }
 
 static int v6fs_block_to_path(struct inode *inode,
@@ -333,7 +340,7 @@ static Indirect *v6fs_find_shared(struct inode *inode, int depth,
 		;
 
 	if (p == chain + k - 1 && p > chain)
-		p->p--;         // XXX why???
+		p->p--;         /* XXX why??? */
 	else {
 		*top = *p->p;
 		*p->p = 0;
@@ -460,6 +467,25 @@ void v6fs_truncate_blocks(struct inode *inode, loff_t offset)
 
 int v6fs_count_free_blocks(struct super_block *sb)
 {
-	// TODO
-	return 0;
+	struct v6fs_sb_info * sbi = v6fs_sb(sb);
+	struct buffer_head * bh;
+	block_t next_block;
+	block_t * idata;
+	int result;
+
+	result = sbi->s_nfree;
+	next_block = sbi->s_free[0];
+	if (!next_block)
+		result = 0;
+	while (next_block) {
+		bh = sb_bread(sb, next_block);
+		if (!bh)
+			break;
+		idata = (block_t *) bh->b_data;
+		result += idata[0];
+		next_block = idata[1];
+		brelse(bh);
+	}
+
+	return result;
 }

@@ -1,10 +1,17 @@
 #include "v6fs.h"
 
 const struct file_operations v6fs_file_operations = {
-	// TODO
+	.llseek		= generic_file_llseek,
+	.read		= do_sync_read,
+	.aio_read	= generic_file_aio_read,
+	.write		= do_sync_write,
+	.aio_write	= generic_file_aio_write,
+	.mmap		= generic_file_mmap,
+	.fsync		= generic_file_fsync,
+	.splice_read	= generic_file_splice_read,
 };
 
-int v6fs_setattr(struct dentry *dentry, struct iattr *iattr)
+static int v6fs_setattr(struct dentry *dentry, struct iattr *iattr)
 {
 	struct inode * inode = dentry->d_inode;
 	int err;
