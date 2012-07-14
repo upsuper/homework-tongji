@@ -12,12 +12,12 @@
 #define V6FS_INODE_SIZE		(sizeof(struct v6fs_inode))
 #define V6FS_INODE_PER_BLOCK	(V6FS_BLOCK_SIZE / V6FS_INODE_SIZE)
 #define V6FS_DIRENT_SIZE	(sizeof(struct v6fs_dirent))
+#define V6FS_MAX_BLOCKS		((1 << 16) - 1)
 
 #define V6FS_ROOT_INO		1
 
-#define V6FS_INODE_BLOCK(n)	\
-	((((n) - 1) >> ilog2(V6FS_INODE_PER_BLOCK)) + 2)
-#define V6FS_INODE_OFFSET(n)	((n - 1) & (V6FS_INODE_PER_BLOCK - 1))
+#define V6FS_INODE_BLOCK(n)	((((n) - 1) / V6FS_INODE_PER_BLOCK) + 2)
+#define V6FS_INODE_OFFSET(n)	(((n) - 1) & (V6FS_INODE_PER_BLOCK - 1))
 
 #define V6FS_IFALLOC	0100000
 #define V6FS_IFMT	060000
