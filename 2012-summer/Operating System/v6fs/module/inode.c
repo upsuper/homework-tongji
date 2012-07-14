@@ -130,7 +130,7 @@ static int v6fs_collect_inodes(struct super_block *sb,
 			continue;
 		for (j = 0; j < V6FS_INODE_PER_BLOCK; j++) {
 			raw_inode = (struct v6fs_inode *) p->b_data + j;
-			if (raw_inode->i_mode & V6FS_IALLOC)
+			if (raw_inode->i_mode & V6FS_IFALLOC)
 				continue;
 			if (*bh)
 				brelse(*bh);
@@ -180,10 +180,10 @@ struct inode *v6fs_new_inode(const struct inode *dir, umode_t mode)
 	}
 
 	vi = v6fs_i(inode);
-	vi->i_mode = V6FS_IALLOC;
+	vi->i_mode = V6FS_IFALLOC;
 	raw_inode = (struct v6fs_inode *)
 		(bh->b_data + V6FS_INODE_OFFSET(ino));
-	raw_inode->i_mode = V6FS_IALLOC;
+	raw_inode->i_mode = V6FS_IFALLOC;
 	mutex_unlock(&sbi->s_inode_lock);
 	sb->s_dirt = 1;
 	mark_buffer_dirty(bh);
@@ -294,7 +294,7 @@ static struct inode *v6fs_fill_inode(struct inode *inode)
 	inode->i_ctime.tv_nsec = 0;
 	inode->i_blocks = 0;
 
-	vi->i_mode = raw_inode->i_mode & (V6FS_IALLOC | V6FS_IFLARG);
+	vi->i_mode = raw_inode->i_mode & (V6FS_IFALLOC | V6FS_IFLARG);
 	for (i = 0; i < 8; i++)
 		vi->i_data[i] = raw_inode->i_addr[i];
 	v6fs_set_inode(inode, old_decode_dev(raw_inode->i_addr[0]));
@@ -333,7 +333,7 @@ int v6fs_count_free_inodes(struct super_block *sb)
 			continue;
 		for (j = 0; j < V6FS_INODE_PER_BLOCK; j++) {
 			raw_inode = (struct v6fs_inode *) bh->b_data + j;
-			if (!(raw_inode->i_mode & V6FS_IALLOC))
+			if (!(raw_inode->i_mode & V6FS_IFALLOC))
 				result++;
 		}
 		brelse(bh);

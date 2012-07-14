@@ -19,7 +19,7 @@
 	((((n) - 1) >> ilog2(V6FS_INODE_PER_BLOCK)) + 2)
 #define V6FS_INODE_OFFSET(n)	((n - 1) & (V6FS_INODE_PER_BLOCK - 1))
 
-#define V6FS_IALLOC	0100000
+#define V6FS_IFALLOC	0100000
 #define V6FS_IFMT	060000
 #define V6FS_IFDIR	040000
 #define V6FS_IFCHR	020000
