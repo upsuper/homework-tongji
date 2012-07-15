@@ -32,6 +32,8 @@
 #define MKFS_USAGE	1
 #define MKFS_ERROR	2
 
+#define VERBOSE(FMT...)	warnx(FMT)
+
 static char * program_name = "mkfs.v6fs";
 
 static int verbose = 0;
@@ -101,6 +103,8 @@ static void parse_arg(int argc, char *argv[])
 
 static void check_params_before(void)
 {
+	if (verbose)
+		VERBOSE("checking device_name...");
 	if (!device_name)
 		usage();
 }
@@ -109,10 +113,8 @@ static void check_params_after(void)
 {
 	unsigned long normal_blocks = blocks - inode_blocks - 2;
 
-	if (blocks > V6FS_MAX_BLOCKS) {
-		warnx("will only use %u blocks", V6FS_MAX_BLOCKS);
-		blocks = V6FS_MAX_BLOCKS;
-	}
+	if (verbose)
+		VERBOSE("checking blocks number...");
 	if (normal_blocks <= 100)
 		errx(MKFS_ERROR, "normal blocks must be not less than 100");
 	if (normal_blocks / inode_blocks < V6FS_INODE_PER_BLOCK)
@@ -124,6 +126,8 @@ static void check_mount(void)
 	FILE * f;
 	struct mntent * mnt;
 
+	if (verbose)
+		VERBOSE("checking whether device has been mounted...");
 	if ((f = setmntent(_PATH_MOUNTED, "r")) == NULL)
 		return;
 	while ((mnt = getmntent(f)) != NULL)
@@ -140,6 +144,8 @@ static void check_mount(void)
 
 static void stat_dev(void)
 {
+	if (verbose)
+		VERBOSE("stating device...");
 	if (stat(device_name, &statbuf) < 0)
 		err(MKFS_ERROR, "%s: stat failed", device_name);
 	is_blk = S_ISBLK(statbuf.st_mode);
@@ -149,6 +155,8 @@ static void open_dev(void)
 {
 	int tmp;
 
+	if (verbose)
+		VERBOSE("opening device...");
 	if (is_blk)
 		dev = open(device_name, O_RDWR | O_EXCL);
 	else
@@ -157,6 +165,8 @@ static void open_dev(void)
 		err(MKFS_ERROR, "%s: open failed", device_name);
 
 	if (!blocks) {
+		if (verbose)
+			VERBOSE("reading block number...");
 		if (is_blk) {
 			tmp = ioctl(dev, BLKGETSIZE, &blocks);
 			if (tmp < 0)
@@ -166,14 +176,26 @@ static void open_dev(void)
 		} else {
 			blocks = statbuf.st_size / V6FS_BLOCK_SIZE;
 		}
+		if (verbose)
+			VERBOSE("set blocks = %d", blocks);
+	}
+	if (blocks > V6FS_MAX_BLOCKS) {
+		warnx("will only use %u blocks", V6FS_MAX_BLOCKS);
+		blocks = V6FS_MAX_BLOCKS;
 	}
 
-	if (!inode_blocks)
+	if (!inode_blocks) {
 		/* inode number : normal blocks ~= 3.06 */
 		inode_blocks = blocks / 50;
+		if (verbose)
+			VERBOSE("set inode_blocks = %d", inode_blocks);
+	}
 }
 
-static void write_block(int blk, char * buffer) {
+static void write_block(int blk, char * buffer)
+{
+	if (verbose)
+		VERBOSE("writing block %d...", blk);
 	if (lseek(dev, blk * V6FS_BLOCK_SIZE, SEEK_SET) < 0)
 		err(MKFS_ERROR, "%s: seek failed in write_block",
 				device_name);
@@ -188,6 +210,9 @@ static void create_super_block(void)
 	block_t file_blocks;
 	block_t nfree;
 	int i;
+
+	if (verbose)
+		VERBOSE("creating super block...");
 
 	memset(block, 0, sizeof(block));
 	sb = (struct v6fs_super_block *) block;
@@ -219,6 +244,9 @@ static void init_inodes(void)
 	struct v6fs_inode * vi;
 	int i;
 
+	if (verbose)
+		VERBOSE("initing inodes...");
+
 	for (i = 2; i <= inode_blocks + 1; i++) {
 		memset(block, 0, sizeof(block));
 		if (V6FS_INODE_BLOCK(V6FS_ROOT_INO) == i) {
@@ -239,6 +267,9 @@ static void init_root_block(void)
 	block_t blk = inode_blocks + 2;
 	struct v6fs_dirent * de;
 
+	if (verbose)
+		VERBOSE("initing root block...");
+
 	memset(block, 0, sizeof(block));
 	de = (struct v6fs_dirent *) block;
 
@@ -255,6 +286,9 @@ static void link_free_blocks(void)
 	block_t next_block = linked_blocks;
 	block_t * free_blocks;
 	int i;
+
+	if (verbose)
+		VERBOSE("linking free blocks...");
 
 	while (next_block) {
 		memset(block, 0, sizeof(block));
