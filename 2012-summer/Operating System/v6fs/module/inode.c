@@ -32,7 +32,7 @@ static struct v6fs_inode *v6fs_raw_inode(struct super_block *sb,
 		return ERR_PTR(-EIO);
 	
 	*p = bh;
-	return (struct v6fs_inode *) bh->b_data + offset;
+	return (struct v6fs_inode *) (bh->b_data + offset);
 }
 
 static struct buffer_head *v6fs_update_inode(struct inode *inode)
@@ -132,10 +132,10 @@ static int v6fs_collect_inodes(struct super_block *sb,
 			raw_inode = (struct v6fs_inode *) p->b_data + j;
 			if (raw_inode->i_mode & V6FS_IFALLOC)
 				continue;
-			if (*bh)
+			if (*bh && *bh != p)
 				brelse(*bh);
 			*bh = p;
-			*ino = i * V6FS_INODE_PER_BLOCK + j;
+			*ino = i * V6FS_INODE_PER_BLOCK + j + 1;
 			if (sbi->s_ninode == 100)
 				return 0;
 			sbi->s_inode[sbi->s_ninode++] = *ino;

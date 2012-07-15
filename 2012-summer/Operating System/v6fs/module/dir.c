@@ -43,7 +43,7 @@ static int v6fs_readdir(struct file *filp, void *dirent, filldir_t filldir)
 	for (; n < npages; n++, offset = 0) {
 		char * p, * kaddr, * limit;
 		struct page * page = v6fs_get_page(inode, n);
-		struct v6fs_dirent * dirent;
+		struct v6fs_dirent * de;
 
 		if (IS_ERR(page))
 			continue;
@@ -51,15 +51,15 @@ static int v6fs_readdir(struct file *filp, void *dirent, filldir_t filldir)
 		limit = kaddr + v6fs_page_bound(inode, n) - V6FS_DIRENT_SIZE;
 		for (p = kaddr + offset; p <= limit; p += V6FS_DIRENT_SIZE) {
 			int over;
-			dirent = (struct v6fs_dirent *) p;
-			if (!dirent->inode)
+			de = (struct v6fs_dirent *) p;
+			if (!de->inode)
 				continue;
 
 			offset = p - kaddr;
-			over = filldir(dirent, dirent->name,
-				strnlen(dirent->name, V6FS_FILESIZE_MAX),
+			over = filldir(dirent, de->name,
+				strnlen(de->name, V6FS_FILESIZE_MAX),
 				(n << PAGE_CACHE_SHIFT) | offset,
-				dirent->inode, DT_UNKNOWN);
+				de->inode, DT_UNKNOWN);
 			if (over) {
 				v6fs_put_page(page);
 				goto done;

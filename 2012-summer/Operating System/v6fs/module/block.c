@@ -54,15 +54,21 @@ void v6fs_free_block(struct inode *inode, block_t block)
 	mutex_lock(&sbi->s_free_lock);
 	if (sbi->s_nfree == 100) {
 		struct buffer_head * bh;
-		__u16 * free_blocks;
+		block_t * free_blocks;
 		int i;
 
 		bh = sb_getblk(sb, block);
-		free_blocks = (__u16 *) bh->b_data;
+		lock_buffer(bh);
+		free_blocks = (block_t *) bh->b_data;
 		free_blocks[0] = sbi->s_nfree;
-		for (i = 0; i < sbi->s_nfree; i++)
+		for (i = 0; i < sbi->s_nfree; i++) {
 			free_blocks[i + 1] = sbi->s_free[i];
-		mark_buffer_dirty(bh);
+			sbi->s_free[i] = 0;
+		}
+		set_buffer_uptodate(bh);
+		unlock_buffer(bh);
+		mark_buffer_dirty_inode(bh, inode);
+		brelse(bh);
 		sbi->s_nfree = 0;
 	}
 	sbi->s_free[sbi->s_nfree++] = block;
@@ -83,8 +89,8 @@ static int v6fs_block_to_path(struct inode *inode,
 		printk("V6FS: block_to_path: block %d too big on dev %s\n",
 			block, bdevname(inode->i_sb->s_bdev, b));
 	} else if (!V6FS_ISLARG(v6fs_i(inode)->i_mode)) {
-		if (block < 8)
-			offsets[n++] = block;
+		/* we will let who call this to deal with extending */
+		offsets[n++] = block;
 	} else {
 		if (block < (7 << 8)) {
 			offsets[n++] = block >> 8;
@@ -227,8 +233,10 @@ inline int v6fs_block_extend(struct inode *inode)
 	i_data = v6fs_i(inode)->i_data;
 
 	bh = sb_getblk(inode->i_sb, nr);
+	if (!bh)
+		return -EIO;
 	lock_buffer(bh);
-	memset(bh->b_data, 0, bh->b_size);
+	memset(bh->b_data, 0, V6FS_BLOCK_SIZE);
 	p = (block_t *) bh->b_data;
 	for (i = 0; i < 8; i++) {
 		p[i] = i_data[i];
@@ -236,11 +244,11 @@ inline int v6fs_block_extend(struct inode *inode)
 	}
 	set_buffer_uptodate(bh);
 	unlock_buffer(bh);
+	v6fs_i(inode)->i_mode |= V6FS_IFLARG;
 	i_data[0] = nr;
 	mark_buffer_dirty_inode(bh, inode);
 	brelse(bh);
 
-	v6fs_i(inode)->i_mode |= V6FS_IFLARG;
 	return 0;
 }
 
@@ -253,6 +261,15 @@ int v6fs_get_block(struct inode *inode, sector_t block,
 	Indirect *partial;
 	int left;
 	int depth = v6fs_block_to_path(inode, block, offsets);
+
+	if (depth == 1 && offsets[0] >= 8) {
+		if (!create)
+			goto out;
+		err = v6fs_block_extend(inode);
+		if (err)
+			goto out;
+		depth = v6fs_block_to_path(inode, block, offsets);
+	}
 
 	if (depth == 0)
 		goto out;
@@ -271,14 +288,6 @@ got_it:
 
 	if (err == -EAGAIN)
 		goto changed;
-
-	if (depth == 1 && offsets[0] >= 8) {
-		err = v6fs_block_extend(inode);
-		if (err == -ENOSPC)
-			goto cleanup;
-		depth = v6fs_block_to_path(inode, block, offsets);
-		goto changed;
-	}
 
 	left = (chain + depth) - partial;
 	err = v6fs_alloc_branch(inode, left, offsets + (partial - chain), partial);

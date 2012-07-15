@@ -81,11 +81,11 @@ static int v6fs_statfs(struct dentry *dentry, struct kstatfs *buf)
 	u64 id = huge_encode_dev(sb->s_bdev->bd_dev);
 	buf->f_type	= V6FS_MAGIC;
 	buf->f_bsize	= sb->s_blocksize;
-	buf->f_blocks	= sbi->s_fsize - sbi->s_isize - 1;
+	buf->f_blocks	= sbi->s_fsize - sbi->s_isize - 2;
 	buf->f_bfree	= v6fs_count_free_blocks(sb);
 	buf->f_bavail	= buf->f_bfree;
 	buf->f_ffree	= v6fs_count_free_inodes(sb);
-	buf->f_files	= sbi->s_isize - buf->f_ffree;
+	buf->f_files	= sbi->s_isize * V6FS_INODE_PER_BLOCK;
 	buf->f_namelen	= V6FS_FILENAME_MAX;
 	buf->f_fsid.val[0] = (u32) id;
 	buf->f_fsid.val[1] = (u32) (id >> 32);
@@ -134,6 +134,9 @@ static int v6fs_fill_super(struct super_block *sb, void *data, int silent)
 	sbi->s_nfree	= vs->s_nfree;
 	sbi->s_ninode	= vs->s_ninode;
 
+	if (!sbi->s_fsize || !sbi->s_isize || sbi->s_fsize < sbi->s_isize + 1)
+		goto out_error_sb;
+
 	mutex_init(&sbi->s_free_lock);
 	mutex_init(&sbi->s_inode_lock);
 
@@ -163,6 +166,10 @@ static int v6fs_fill_super(struct super_block *sb, void *data, int silent)
 out_no_root:
 	if (!silent)
 		printk("V6FS: get root inode failed\n");
+	goto out;
+
+out_error_sb:
+	printk("V6FS: bad superblock detect\n");
 	goto out;
 
 out_bad_sb:
