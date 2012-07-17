@@ -1,53 +1,8 @@
 var TMP_PREFIX = '@';
 
-function MySet() {
-    this.set = {};
+if (typeof require === 'function') {
+    var MySet = require('./myset.js').MySet;
 }
-
-MySet.prototype.add = function (v) {
-    this.set[v] = true;
-};
-
-MySet.prototype.delete = function (v) {
-    delete this.set[v];
-};
-
-MySet.prototype.has = function (v) {
-    return !!this.set[v];
-};
-
-MySet.prototype.size = function () {
-    return Object.keys(this.set).length;
-};
-
-MySet.prototype.concat = function (set) {
-    if (!(set instanceof MySet))
-        return;
-    for (var t in set.set)
-        this.add(t);
-};
-
-MySet.prototype.clone = function () {
-    var ret = new MySet();
-    for (var t in this.set)
-        ret.add(t);
-    return ret;
-};
-
-MySet.prototype.without = function () {
-    var ret = this.clone();
-    for (var i = 0; i < arguments.length; ++i)
-        ret.delete(arguments[i]);
-    return ret;
-};
-
-MySet.prototype.toArray = function () {
-    return Object.keys(this.set);
-};
-
-MySet.prototype.toString = function () {
-    return '{' + this.toArray().map(JSON.stringify).join(', ') + '}';
-};
 
 function Frontend(syntax, ignore, start) {
     this.syntax = syntax;
@@ -437,30 +392,33 @@ Frontend.prototype.initTranslate = function (source) {
     this.next = this.nextWord();
 };
 
-function Result(begin) {
+function Intermediate(begin) {
     if (!begin) begin = 1;
-    this.nextquad = this.begin = begin;
-    this.tmpnum = 0;
-    this.$ = {};
+    Object.defineProperties(this, {
+        begin: {value: begin},
+        nextquad: {value: begin, writable: true},
+        tmpnum: {value: 0, writable: true},
+        $: {value: {}}
+    });
 }
 
-Result.prototype.emit = function (op, in1, in2, out) {
+Intermediate.prototype.emit = function (op, in1, in2, out) {
     this[this.nextquad] = {op: op, in1: in1, in2: in2, out: out};
     var curquad = this.nextquad;
     this.nextquad += 1;
     return curquad;
 };
 
-Result.prototype.backpatch = function (list, out) {
+Intermediate.prototype.backpatch = function (list, out) {
     for (var i = 0; i < list.length; ++i)
         this[list[i]].out = out;
 };
 
-Result.prototype.newtemp = function () {
+Intermediate.prototype.newtemp = function () {
     return TMP_PREFIX + ++this.tmpnum;
 };
 
-Result.prototype.toString = function () {
+Intermediate.prototype.toString = function () {
     var result = [];
     for (var i = this.begin; i < this.nextquad; ++i) {
         var t = this[i];
@@ -486,7 +444,7 @@ Frontend.prototype.callRule = function (p, result) {
 Frontend.prototype.translate = function (source) {
     this.initTranslate(source);
 
-    var result = new Result(100);
+    var result = new Intermediate(100);
     var p;
     while (p = this.nextPhrase())
         this.callRule(p, result);
@@ -496,5 +454,5 @@ Frontend.prototype.translate = function (source) {
 
 if (module !== undefined) {
     exports.Frontend = Frontend;
-    exports.Result = Result;
+    exports.Intermediate = Intermediate;
 }
