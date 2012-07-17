@@ -403,6 +403,8 @@ function Intermediate(begin) {
 }
 
 Intermediate.prototype.emit = function (op, in1, in2, out) {
+    if (typeof out !== 'string')
+        out = out.toString();
     this[this.nextquad] = {op: op, in1: in1, in2: in2, out: out};
     var curquad = this.nextquad;
     this.nextquad += 1;
@@ -410,6 +412,8 @@ Intermediate.prototype.emit = function (op, in1, in2, out) {
 };
 
 Intermediate.prototype.backpatch = function (list, out) {
+    if (typeof out !== 'string')
+        out = out.toString();
     for (var i = 0; i < list.length; ++i)
         this[list[i]].out = out;
 };

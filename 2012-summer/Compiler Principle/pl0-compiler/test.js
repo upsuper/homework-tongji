@@ -13,7 +13,7 @@ try {
     console.log(code.split('\n')[e.line - 1]);
     console.log(new Array(e.colume).join(' ') + '^');
 }
-if (result)
-    console.log(result.toString());
+//if (result)
+//    console.log(result.toString());
 
-backend.toX86IntelAsm(result);
+console.log(backend.x86Asm(result));
