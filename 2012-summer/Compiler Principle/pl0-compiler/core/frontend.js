@@ -403,7 +403,7 @@ function Intermediate(begin) {
 }
 
 Intermediate.prototype.emit = function (op, in1, in2, out) {
-    if (typeof out !== 'string')
+    if (typeof out !== 'string' && out !== null)
         out = out.toString();
     this[this.nextquad] = {op: op, in1: in1, in2: in2, out: out};
     var curquad = this.nextquad;

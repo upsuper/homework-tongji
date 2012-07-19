@@ -16,4 +16,4 @@ try {
 //if (result)
 //    console.log(result.toString());
 
-console.log(backend.x86Asm(result));
+console.log(backend.toYasm(result));

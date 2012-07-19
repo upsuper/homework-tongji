@@ -1,13 +1,17 @@
 PROGRAM gcd
-CONST x = 252, y = 147;
 VAR a, b, t;
 BEGIN
-    a := x;
-    b := x - y;
-    WHILE b <> 0 DO
+    INPUT a;
+    WHILE a <> 0 DO
     BEGIN
-        t := b;
-        b := a % b;
-        a := t;
+        INPUT b;
+        WHILE b <> 0 DO
+        BEGIN
+            t := b;
+            b := a % b;
+            a := t;
+        END;
+        OUTPUT a;
+        INPUT a
     END
 END

@@ -124,7 +124,7 @@ function x86FindRegisterVars(symbolTable, blocks) {
 }
 
 function x86AllocMemory(symbolTable) {
-    var pos = 0;
+    var pos = 4;
 
     for (var sym in symbolTable) {
         if (!symbolTable[sym].register) {
@@ -206,7 +206,7 @@ function x86Asm(intermediate) {
     var statements = Object.keys(intermediate);
     statements.sort();
     result.push('PUSHAD');
-    pushResult('ADD', 'ESP', memLength);
+    pushResult('SUB', 'ESP', memLength);
     var reg1, reg2, op;
     for (var i = 0; i < statements.length; ++i) {
         var s = statements[i];
@@ -293,17 +293,45 @@ function x86Asm(intermediate) {
             deallocReg(reg2);
             pushResult(op, 'L' + s.out);
             break;
+        case 'in':
+            registers['EAX'] = true;
+            pushResult('CALL', '_input');
+            storePlace(s.out, 'EAX');
+            deallocReg('EAX');
+            break;
+        case 'out':
+            reg1 = loadPlace(s.in1);
+            pushResult('MOV', '[ESP]', reg1);
+            pushResult('CALL', '_output');
+            deallocReg(reg1);
+            break;
         default:
             throw "Unknown op!"; // XXX
         }
     }
     result.push('L0:');
-    pushResult('SUB', 'ESP', memLength);
+    pushResult('ADD', 'ESP', memLength);
     result.push('POPAD');
+    result.push('RET');
+
+    return result.join('\n');
+}
+
+function toYasm(intermediate) {
+    var asm = x86Asm(intermediate);
+    var result = [];
+    result.push('GLOBAL _asm_start');
+    result.push('EXTERN _input');
+    result.push('EXTERN _output');
+    result.push('BITS 32');
+    result.push('SECTION .text');
+    result.push('_asm_start:');
+    result.push(asm);
 
     return result.join('\n');
 }
 
 if (module !== undefined) {
     exports.x86Asm = x86Asm;
+    exports.toYasm = toYasm;
 }

@@ -94,7 +94,7 @@ var PL0_SYNTAX = {
         {expr: ['CondStatement']},
         {expr: ['LoopStatement']},
         {expr: ['CompStatement']},
-        /*{expr: ['IOStatement']},*/
+        {expr: ['IOStatement']},
         {expr: ['EmptyStatement']}
     ],
     EmptyStatement: [{expr: []}],
@@ -254,7 +254,6 @@ var PL0_SYNTAX = {
             }
         }
     }],
-    /*
     IOStatement: [{
         expr: [/INPUT/, 'Identifier'],
         rule: function (s, _input, id) {
@@ -275,7 +274,6 @@ var PL0_SYNTAX = {
             this.emit('out', data, null, null);
         }
     }],
-    */
     CompStatement: [{
         expr: [/BEGIN/, '_CompStatement', /END/],
         rule: function (s, _begin, l, _end) {
