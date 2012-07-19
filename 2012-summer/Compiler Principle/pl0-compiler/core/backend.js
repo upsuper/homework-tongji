@@ -327,6 +327,7 @@ function toYasm(intermediate) {
     result.push('SECTION .text');
     result.push('_asm_start:');
     result.push(asm);
+    result.push('');
 
     return result.join('\n');
 }

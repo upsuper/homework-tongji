@@ -432,6 +432,7 @@ Intermediate.prototype.toString = function () {
                 (t.in2 !== null ? t.in2 : '-') + '\t, ' +
                 (t.out !== null ? t.out : '-') + '\t)');
     }
+    result.push('');
     return result.join('\n');
 };
 
