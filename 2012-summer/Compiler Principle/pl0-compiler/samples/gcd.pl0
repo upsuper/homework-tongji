@@ -9,7 +9,7 @@ BEGIN
         BEGIN
             t := b;
             b := a % b;
-            a := t;
+            a := t
         END;
         OUTPUT a;
         INPUT a

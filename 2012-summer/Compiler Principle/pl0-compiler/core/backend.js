@@ -133,6 +133,10 @@ function x86AllocMemory(symbolTable) {
         }
     }
 
+    pos += 4;
+    if (pos % 16 > 0)
+        pos += 16 - pos % 16;
+    pos -= 4;
     return pos;
 }
 
@@ -304,6 +308,8 @@ function x86Asm(intermediate) {
             pushResult('MOV', '[ESP]', reg1);
             pushResult('CALL', '_output');
             deallocReg(reg1);
+            break;
+        case 'nop':
             break;
         default:
             throw "Unknown op!"; // XXX

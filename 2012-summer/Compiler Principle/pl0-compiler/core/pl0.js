@@ -97,7 +97,12 @@ var PL0_SYNTAX = {
         {expr: ['IOStatement']},
         {expr: ['EmptyStatement']}
     ],
-    EmptyStatement: [{expr: []}],
+    EmptyStatement: [{
+        expr: [],
+        rule: function (s) {
+            this.emit('nop', null, null, null);
+        }
+    }],
     AssignStatement: [{
         expr: ['Identifier', /:=/, 'Expression'],
         rule: function (s, id, _as, e) {
@@ -261,17 +266,9 @@ var PL0_SYNTAX = {
             this.emit('in', null, null, '%' + id.$.name);
         }
     }, {
-        expr: [/OUTPUT/, 'Identifier'],
-        rule: function (s, _output, id) {
-            checkId(this, id);
-            var name = id.$.name;
-            var sym = this.$.symTab[name];
-            var data;
-            if (sym !== null)
-                data = '$' + sym;
-            else
-                data = '%' + name;
-            this.emit('out', data, null, null);
+        expr: [/OUTPUT/, 'Expression'],
+        rule: function (s, _output, e) {
+            this.emit('out', e.$.place, null, null);
         }
     }],
     CompStatement: [{

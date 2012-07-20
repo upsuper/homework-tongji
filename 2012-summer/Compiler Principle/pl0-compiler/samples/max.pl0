@@ -1,0 +1,8 @@
+PROGRAM max
+    VAR a, b;
+    BEGIN
+        INPUT a; INPUT b;
+        IF b > a THEN
+            a := b;
+        OUTPUT a
+    END
