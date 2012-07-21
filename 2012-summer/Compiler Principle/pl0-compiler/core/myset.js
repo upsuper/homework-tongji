@@ -47,6 +47,6 @@ MySet.prototype.toString = function () {
     return '{' + this.toArray().map(JSON.stringify).join(', ') + '}';
 };
 
-if (module !== undefined) {
+if (typeof module !== 'undefined' && module.exports) {
     exports.MySet = MySet;
 }

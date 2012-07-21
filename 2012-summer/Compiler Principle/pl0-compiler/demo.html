@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PL/0 Compiler Demo</title>
+    <link rel="stylesheet" href="demo/style.css">
+    <script type="text/javascript" src="core/myset.js"></script>
+    <script type="text/javascript" src="core/pl0.js"></script>
+    <script type="text/javascript" src="core/frontend.js"></script>
+    <script type="text/javascript" src="core/backend.js"></script>
+    <script type="text/javascript" src="demo/basic.js"></script>
+</head>
+<body>
+    <h1>PL/0 Compiler Demo</h1>
+    <div id="smp" class="block prev">
+        <h2>Sample Code</h2>
+<pre>
+PROGRAM add
+    VAR a, b;
+    BEGIN
+        INPUT a; INPUT b;
+        OUTPUT a + b;
+    END
+</pre>
+<pre>
+PROGRAM max
+    VAR a, b;
+    BEGIN
+        INPUT a; INPUT b;
+        IF b &gt; a THEN
+            a := b;
+        OUTPUT a
+    END
+</pre>
+<pre>
+PROGRAM gcd
+    VAR a, b, t;
+    BEGIN
+        INPUT a; INPUT b;
+        WHILE b &lt;&gt; 0 DO
+        BEGIN
+            t := b;
+            b := a % b;
+            a := t
+        END;
+        OUTPUT a
+    END
+</pre>
+    </div>
+    <div id="src" class="block current">
+        <h2>Source Code</h2>
+        <textarea id="source" placeholder="Input your PL/0 source code here..."></textarea>
+        <button id="onestep" title="Generate intermediate code for one step">&gt;</button>
+        <button id="toimc" title="Generate all intermediate code">&raquo;</button>
+        <div id="error"></div>
+    </div>
+    <div id="imc" class="block future">
+        <h2>Intermediate code</h2>
+        <div id="intermediate">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>op</th>
+                        <th>arg1</th>
+                        <th>arg2</th>
+                        <th>ret</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>100</th>
+                        <td>in</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>%a</td>
+                    </tr>
+                    <tr>
+                        <th>101</th>
+                        <td>in</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>%b</td>
+                    </tr>
+                    <tr class="new">
+                        <th>102</th>
+                        <td>+</td>
+                        <td>%a</td>
+                        <td>%b</td>
+                        <td>%@1</td>
+                    </tr>
+                    <tr class="new">
+                        <th>103</th>
+                        <td>out</td>
+                        <td>%@1</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="properties">
+            <ul>
+                <li>Factor<ul>
+                    <li class="changed">place = $a</li>
+                    <li>nextlist = [100, 101]</li>
+                </ul></li>
+                <li>Factor<ul>
+                    <li class="changed">place = $a</li>
+                    <li>nextlist = [100, 101]</li>
+                </ul></li>
+                <li>_CompStatement</li>
+                <li>'BEGIN'</li>
+                <li>VarDesc</li>
+                <li>Header</li>
+            </ul>
+        </div>
+    </div>
+    <div id="asm" class="block future">
+        <h2>Assemble code</h2>
+        <div id="asmcode"></div>
+    </div>
+    <div id="fin" class="block future">
+        <h2>Finish</h2>
+        <p>You can then follow the instruction below manually to generate an executable program:</p>
+        <ol>
+            <li>download wrapper code: <a href="lib/wrapper.c">wrapper.c</a></li>
+            <li>use YASM to assemble the code: <code>yasm -f <span id="objfmt"></span> program.asm</code></li>
+            <li>use GCC to compile wrapper and link: <code>gcc -m32 -o program wrapper.c program.asm</code></li>
+        </ol>
+    </div>
+    <button id="prev" title="Previous step" disabled>&laquo;</button>
+    <button id="next" title="Next step" disabled>&raquo;</button>
+    <script type="text/javascript" src="demo/pl0.js"></script>
+</body>
+</html>

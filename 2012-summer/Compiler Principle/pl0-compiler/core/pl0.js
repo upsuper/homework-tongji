@@ -294,7 +294,7 @@ var PL0_SYNTAX = {
 var PL0_IGNORE = [/\s+/];
 var PL0_START = 'Program';
 
-if (module !== undefined) {
+if (typeof module !== 'undefined' && module.exports) {
     exports.syntax = PL0_SYNTAX;
     exports.ignore = PL0_IGNORE;
     exports.start = PL0_START;

@@ -1,5 +1,5 @@
 PROGRAM add
-    VAR a, b, c;
+    VAR a, b;
     BEGIN
         INPUT a;
         INPUT b;

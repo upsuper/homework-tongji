@@ -21,13 +21,13 @@ function Frontend(syntax, ignore, start) {
         }
     }
     this.nonterms = new RegExp('^(' + nontermRegs.join('|') + ')');
-    
+
     // generate ignorance matching regular expression
     var ignoreRegs = [];
     for (var i = 0; i < ignore.length; ++i)
         ignoreRegs.push(ignore[i].source);
     this.ignores = new RegExp('^(' + ignoreRegs.join('|') + ')+');
-    
+
     // generate action & goto table
     this.generateTables();
 }
@@ -457,7 +457,7 @@ Frontend.prototype.translate = function (source) {
     return result;
 };
 
-if (module !== undefined) {
+if (typeof module !== 'undefined' && module.exports) {
     exports.Frontend = Frontend;
     exports.Intermediate = Intermediate;
 }

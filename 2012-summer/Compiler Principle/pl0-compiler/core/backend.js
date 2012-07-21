@@ -338,7 +338,7 @@ function toYasm(intermediate) {
     return result.join('\n');
 }
 
-if (module !== undefined) {
+if (typeof module !== 'undefined' && module.exports) {
     exports.x86Asm = x86Asm;
     exports.toYasm = toYasm;
 }
