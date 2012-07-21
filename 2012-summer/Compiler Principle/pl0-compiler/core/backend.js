@@ -175,7 +175,7 @@ function x86Asm(intermediate) {
     var result = [];
     function pushResult(op) {
         var args = Array.prototype.slice.call(arguments, 1);
-        result.push(op + ' ' + args.join(', '));
+        result.push('\t' + op + ' ' + args.join(', '));
     }
     function getVarPos(v) {
         return '[ESP+' + symbolTable[v].position + ']';
@@ -209,7 +209,7 @@ function x86Asm(intermediate) {
 
     var statements = Object.keys(intermediate);
     statements.sort();
-    result.push('PUSHAD');
+    result.push('\tPUSHAD');
     pushResult('SUB', 'ESP', memLength);
     var reg1, reg2, op;
     for (var i = 0; i < statements.length; ++i) {
@@ -317,8 +317,8 @@ function x86Asm(intermediate) {
     }
     result.push('L0:');
     pushResult('ADD', 'ESP', memLength);
-    result.push('POPAD');
-    result.push('RET');
+    result.push('\tPOPAD');
+    result.push('\tRET');
 
     return result.join('\n');
 }

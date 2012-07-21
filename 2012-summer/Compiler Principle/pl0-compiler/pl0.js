@@ -49,15 +49,18 @@ var intermediate;
 try {
     intermediate = frontend.translate(code);
 } catch (e) {
-    console.log("Error: %s, line %d colume %d", e.message, e.line, e.colume);
-    console.log(code.split('\n')[e.line - 1]);
-    console.log(new Array(e.colume).join(' ') + '^');
+    console.error("Error: %s, line %d colume %d", e.message, e.line, e.colume);
+    console.error(code.split('\n')[e.line - 1]);
+    console.error(new Array(e.colume).join(' ') + '^');
     process.exit(1);
 }
 if (stopstep === 'i') {
     if (!output)
         output = basename + '.i';
-    fs.writeFileSync(output, intermediate, 'utf8');
+    if (output === '-')
+        process.stdout.write(intermediate.toString(), 'utf8');
+    else
+        fs.writeFileSync(output, intermediate, 'utf8');
     process.exit(0);
 }
 
@@ -66,7 +69,10 @@ var asmcode = backend.toYasm(intermediate);
 if (stopstep === 's') {
     if (!output)
         output = basename + '.asm';
-    fs.writeFileSync(output, asmcode, 'utf8');
+    if (output === '-')
+        process.stdout.write(asmcode, 'utf8');
+    else
+        fs.writeFileSync(output, asmcode, 'utf8');
     process.exit(0);
 }
 
@@ -119,5 +125,6 @@ child.on('exit', function (code) {
             process.exit(2);
         }
         fs.unlink(tmpfile);
+        process.exit(0);
     });
 });
