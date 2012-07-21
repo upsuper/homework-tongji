@@ -170,6 +170,7 @@ $next.addEventListener('click', function () {
             $('#toimc').disabled = false;
             $source.readOnly = true;
             $('#error').innerHTML = '';
+            continuously = false;
             $next.disabled = true;
             break;
         case 'imc':
@@ -220,8 +221,9 @@ function createPharseItem(pharse) {
     $li.appendChild($ul);
     return $li;
 }
-var finished = true;
-$('#onestep').addEventListener('click', function () {
+var finished = true,
+    continuously = false;
+function nextStep() {
     if (!finished)
         return;
     finished = false;
@@ -346,52 +348,17 @@ $('#onestep').addEventListener('click', function () {
                 ++i;
             }
             finished = true;
+            if (continuously)
+                nextStep();
         }
     }
     moveNext();
-});
+}
+$('#onestep').addEventListener('click', nextStep);
 $('#toimc').addEventListener('click', function () {
-    $('#intermediate>table>tbody').innerHTML = '';
-    $('#properties>ul').innerHTML = '';
-
-    var error = false;
-
-    intermediate = new Intermediate(100);
-    frontend.initTranslate($source.value);
-    try {
-        var p;
-        while (p = frontend.nextPhrase())
-            frontend.callRule(p, intermediate);
-    } catch (e) {
-        showError(e);
-        error = true;
-    }
-
-    var $tbody = $('#intermediate>table>tbody');
-    for (var i in intermediate) {
-        if (!intermediate.hasOwnProperty(i))
-            continue;
-
-        var $tr = $c('tr');
-        var $td, item = intermediate[i];
-        $td = $c('th'); fillTd($td, i); $tr.appendChild($td);
-        $td = $c('td'); fillTd($td, item.op); $tr.appendChild($td);
-        $td = $c('td'); fillTd($td, item.in1); $tr.appendChild($td);
-        $td = $c('td'); fillTd($td, item.in2); $tr.appendChild($td);
-        $td = $c('td'); fillTd($td, item.out); $tr.appendChild($td);
-        $tbody.appendChild($tr);
-    }
-
-    var $ul = $('#properties>ul');
-    for (var i = frontend.reduced.length - 1; i > 0; --i) {
-        var $li = createPharseItem(frontend.reduced[i]);
-        $ul.appendChild($li);
-    }
-
-    $('#onestep').disabled = true;
-    $('#toimc').disabled = true;
-    if (!error)
-        $next.disabled = false;
+    continuously = !continuously;
+    if (continuously)
+        nextStep();
 });
 $('#properties>ul').addEventListener('mouseover', function (e) {
     var $t = e.target;
