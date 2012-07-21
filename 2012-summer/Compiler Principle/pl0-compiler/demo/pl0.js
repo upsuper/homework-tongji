@@ -348,8 +348,11 @@ function nextStep() {
                 ++i;
             }
             finished = true;
-            if (continuously)
-                nextStep();
+            if (continuously && p) {
+                setTimeout(function () {
+                    nextStep();
+                }, 0);
+            }
         }
     }
     moveNext();
