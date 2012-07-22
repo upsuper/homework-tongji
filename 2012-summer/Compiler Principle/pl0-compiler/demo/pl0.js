@@ -7,12 +7,14 @@ function whitespaces(num) {
 
 $('#smp').addEventListener('click', function (e) {
     if (e.target.tagName === 'PRE') {
-        $source.value = e.target.innerText;
+        $source.value = e.target.textContent;
         $next.disabled = false;
     }
 }, true);
 
 $source.addEventListener('keydown', function (e) {
+    if (this.readOnly)
+        return;
     var key = e.keyCode || e.which;
     if (key === 9) {
         var source = $source.value;
@@ -195,6 +197,8 @@ function stringify(obj) {
         return obj.toString();
     } else if (obj instanceof Array) {
         return '[' + obj.join(', ') + ']';
+    } else if (obj === undefined) {
+        return '(null)';
     }
 }
 function showError(e) {
@@ -296,14 +300,16 @@ function nextStep() {
             }, 300);
         } else if (pushList.length > 0) {
             $item = pushList.shift();
-            $item.classList.add('new');
+            $ul.appendChild($item);
+            var height = $item.offsetHeight;
+            $ul.removeChild($item);
+            $item.style.marginTop = '-' + height + 'px';
             $ul.insertBefore($item, $ul.firstChild);
-            $item.style.marginTop = '-' + $item.offsetHeight + 'px';
+            $source.focus();
             $source.setSelectionRange(
                     parseInt($item.dataset.start),
                     parseInt($item.dataset.end));
             setTimeout(function () {
-                $item.classList.remove('new');
                 $item.style.marginTop = '0px';
                 setTimeout(function () {
                     moveNext();
@@ -370,16 +376,20 @@ $('#properties>ul').addEventListener('mouseover', function (e) {
     var start = parseInt($t.dataset.start),
         end = parseInt($t.dataset.end);
     if ($source.selectionStart !== start ||
-        $source.selectionEnd !== end)
+        $source.selectionEnd !== end) {
+        $source.focus();
         $source.setSelectionRange(start, end);
+    }
 });
 $('#properties>ul').addEventListener('mouseout', function (e) {
     var $t = e.target;
     if ($t.parentNode !== this)
         return;
     if ($source.selectionStart !== curStart ||
-        $source.selectionEnd !== curEnd)
+        $source.selectionEnd !== curEnd) {
+        $source.focus();
         $source.setSelectionRange(curStart, curEnd);
+    }
 });
 
 var platform = navigator.platform,

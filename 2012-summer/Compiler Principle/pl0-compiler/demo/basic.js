@@ -22,6 +22,8 @@ String.prototype.toHTML = function () {
                .replace(/ /g, '&nbsp;');
 };
 
+if (NodeList !== $all('html').constructor)
+    NodeList = $all('html').constructor;
 NodeList.prototype.toArray = function () {
     return Array.prototype.slice.call(this);
 };

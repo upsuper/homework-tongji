@@ -79,11 +79,11 @@ h1 {
 }
 #prev {
     margin-left: -525px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='80'><path d='M 24 8 L 8 40 L 24 72' stroke='#666' stroke-width='13' fill='transparent' /><path d='M 23 10 L 8 40 L 23 70' stroke='#fff' stroke-width='7' fill='transparent' /></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='80'><path d='M 24 8 L 8 40 L 24 72' stroke='%23666' stroke-width='13' fill='rgba%280, 0, 0, 0%29' /><path d='M 23 10 L 8 40 L 23 70' stroke='%23fff' stroke-width='7' fill='rgba%280, 0, 0, 0%29' /></svg>");
 }
 #next {
     margin-left: 493px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='80'><path d='M 8 8 L 24 40 L 8 72' stroke='#666' stroke-width='13' fill='transparent' /><path d='M 9 10 L 24 40 L 9 70' stroke='#fff' stroke-width='7' fill='transparent' /></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='80'><path d='M 8 8 L 24 40 L 8 72' stroke='%23666' stroke-width='13' fill='rgba%280, 0, 0, 0%29' /><path d='M 9 10 L 24 40 L 9 70' stroke='%23fff' stroke-width='7' fill='rgba%280, 0, 0, 0%29' /></svg>");
 }
 #prev:disabled { margin-left: -540px; }
 #next:disabled { margin-left: 508px; }
@@ -143,25 +143,32 @@ pre {
     cursor: pointer;
 }
 pre:hover {
-    background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='#d8d8d8' stroke-width='8' fill='transparent' /></svg>") 95% 50% no-repeat;
+    background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='%23d8d8d8' stroke-width='8' fill='rgba%280, 0, 0, 0%29' /></svg>") 95% 50% no-repeat;
 }
 
-#source, #asmcode {
+#wrapper, #asmcode {
     position: absolute;
     left: 10px; right: 10px;
     top: 45px; bottom: 10px;
     border: 1px solid #aaa;
     background: #fff;
-    padding: 10px;
-    resize: none;
-    font: 14px Courier, monospace;
     overflow-y: auto;
+}
+#source, #asmcode {
+    font: 14px Courier, monospace;
+    padding: 10px;
+}
+#source {
+    width: 100%; height: 100%;
+    resize: none;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
 }
 .prev#src::after, .past#src::after {
     position: absolute;
     right: 20px; top: 55px;
     background: #fff;
-    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><rect x='3' y='7' width='10' height='8' fill='#ccc' /><rect x='5' y='2' width='6' height='7' rx='3' ry='2' fill='transparent' stroke='#ccc' stroke-width='2' /></svg>");
+    content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'><rect x='3' y='7' width='10' height='8' fill='%23ccc' /><rect x='5' y='2' width='6' height='7' rx='3' ry='2' fill='rgba%280, 0, 0, 0%29' stroke='%23ccc' stroke-width='2' /></svg>");
 }
 #onestep, #toimc {
     position: absolute;
@@ -183,11 +190,11 @@ pre:hover {
 .prev>#onestep, .prev>#toimc {
     pointer-events: auto;
     opacity: .6;
-    -webkit-transition: none;
-    -moz-transition: none;
-    -ms-transition: none;
-    -o-transition: none;
-    transition: none;
+    -webkit-transition: all 0;
+    -moz-transition: all 0;
+    -ms-transition: all 0;
+    -o-transition: all 0;
+    transition: all 0;
 }
 .prev>#onestep:disabled, .prev>#toimc:disabled {
     pointer-events: none;
@@ -203,11 +210,11 @@ pre:hover {
 }
 #onestep {
     margin-top: -63px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='#999' stroke-width='8' fill='transparent' /></svg>")
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='%23999' stroke-width='8' fill='rgba%280, 0, 0, 0%29' /></svg>")
 }
 #toimc {
     margin-top: 10px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='#999' stroke-width='6' fill='transparent' /><path d='M 15 5 L 25 25 L 15 45' stroke='#999' stroke-width='6' fill='transparent' /></svg>")
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='50'><path d='M 5 5 L 15 25 L 5 45' stroke='%23999' stroke-width='6' fill='rgba%280, 0, 0, 0%29' /><path d='M 15 5 L 25 25 L 15 45' stroke='%23999' stroke-width='6' fill='rgba%280, 0, 0, 0%29' /></svg>")
 }
 #error {
     position: absolute;
@@ -300,13 +307,6 @@ pre:hover {
     -ms-transition: margin-top .3s;
     -o-transition: margin-top .3s;
     transition: margin-top .3s;
-}
-#properties>ul>li.new {
-    -webkit-transition: all 0;
-    -moz-transition: all 0;
-    -ms-transition: all 0;
-    -o-transition: all 0;
-    transition: all 0;
 }
 #properties>ul>li:hover {
     background: #fff;
