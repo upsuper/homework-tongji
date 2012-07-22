@@ -1,0 +1,11 @@
+PROGRAM swap
+    VAR a, b;
+    BEGIN
+        INPUT a;
+        INPUT b;
+        a := a - b;
+        b := a + b;
+        a := b - a;
+        OUTPUT a;
+        OUTPUT b
+    END

@@ -95,9 +95,20 @@ function x86FindRegisterVars(symbolTable, blocks) {
             delete tmpSymTab[sym];
         } else if (tabItem[method] !== null && tabItem[method] !== pos) {
             delete tmpSymTab[sym];
+        } else if (method === 'get' && tabItem.set === null) {
+            delete tmpSymTab[sym];
         } else {
-            tmpSymTab[sym].block = block;
-            tmpSymTab[sym][method] = pos;
+            tabItem.block = block;
+            tabItem[method] = pos;
+            if (tabItem.set !== null && tabItem.get !== null) {
+                if (tabItem.get - tabItem.set > 5) {
+                    delete tmpSymTab[sym];
+                } else {
+                    tabItem.block = null;
+                    tabItem.set = null;
+                    tabItem.get = null;
+                }
+            }
         }
     }
 
@@ -115,11 +126,9 @@ function x86FindRegisterVars(symbolTable, blocks) {
         var tabItem = tmpSymTab[sym];
         symbolTable[sym].register = !!(
                 tabItem && 
-                tabItem.block !== null &&
-                tabItem.set !== null &&
-                tabItem.get !== null &&
-                tabItem.set < tabItem.get &&
-                tabItem.get - tabItem.set <= 5);
+                tabItem.block === null &&
+                tabItem.set === null &&
+                tabItem.get === null);
     }
 }
 
@@ -157,16 +166,37 @@ function x86Asm(intermediate) {
         'ESI': false,
         'EDI': false,
     };
-    function allocReg(notaxdx) {
-        for (var reg in registers) {
-            if (registers[reg])
-                continue;
-            if (notaxdx && (reg === 'EAX' || reg === 'EDX'))
-                continue;
-            registers[reg] = true;
-            return reg;
+    var regLastData = {
+        'EAX': null,
+        'EBX': null,
+        'ECX': null,
+        'EDX': null,
+        'EBP': null,
+        'ESI': null,
+        'EDI': null,
+    };
+    function allocReg(reg) {
+        var chosen = null;
+        if (typeof reg === 'string') {
+            chosen = reg;
+            regLastData[reg] = null;
+        } else {
+            for (var reg in registers) {
+                if (registers[reg])
+                    continue;
+                if (reg === true && (reg === 'EAX' || reg === 'EDX'))
+                    continue;
+                chosen = reg;
+                if (regLastData[reg] === null)
+                    break;
+            }
         }
-        throw "No reg!"; // XXX
+        if (chosen) {
+            registers[chosen] = true;
+            return reg;
+        } else {
+            throw "No reg!"; // XXX
+        }
     }
     function deallocReg(reg) {
         registers[reg] = false;
@@ -186,9 +216,23 @@ function x86Asm(intermediate) {
                 reg = allocReg();
             pushResult('MOV', reg, place.slice(1));
         } else if (!symbolTable[place].register) {
-            if (!reg)
-                reg = allocReg();
-            pushResult('MOV', reg, getVarPos(place));
+            if (!reg) {
+                for (var r in regLastData) {
+                    if (regLastData[r] === place) {
+                        registers[r] = true;
+                        reg = r;
+                        break;
+                    }
+                }
+                if (!reg) {
+                    reg = allocReg();
+                    pushResult('MOV', reg, getVarPos(place));
+                    regLastData[reg] = place;
+                }
+            } else {
+                pushResult('MOV', reg, getVarPos(place));
+                regLastData[reg] = place;
+            }
         } else {
             if (!reg)
                 reg = symbolTable[place].register;
@@ -203,7 +247,12 @@ function x86Asm(intermediate) {
             symbolTable[place].register = allocReg(true);
             pushResult('MOV', symbolTable[place].register, reg);
         } else {
+            for (var r in regLastData) {
+                if (regLastData[r] == place)
+                    regLastData[r] = null;
+            }
             pushResult('MOV', getVarPos(place), reg);
+            regLastData[reg] = place;
         }
     }
 
@@ -214,18 +263,25 @@ function x86Asm(intermediate) {
     var reg1, reg2, op;
     for (var i = 0; i < statements.length; ++i) {
         var s = statements[i];
-        if (blocks[s])
+        if (blocks[s]) {
             result.push('L' + s + ':');
+            for (var reg in regLastData)
+                regLastData[reg] = null;
+        }
 
         s = intermediate[s];
         switch (s.op) {
         case '+':
             reg1 = loadPlace(s.in1);
-            reg2 = loadPlace(s.in2);
-            pushResult('ADD', reg1, reg2);
+            if (s.in2[0] === '$') {
+                pushResult('ADD', reg1, s.in2.slice(1));
+            } else {
+                reg2 = loadPlace(s.in2);
+                pushResult('ADD', reg1, reg2);
+                deallocReg(reg2);
+            }
             storePlace(s.out, reg1);
             deallocReg(reg1);
-            deallocReg(reg2);
             break;
         case '-':
             if (s.in2 === null) {
@@ -235,16 +291,22 @@ function x86Asm(intermediate) {
                 deallocReg(reg1);
             } else {
                 reg1 = loadPlace(s.in1);
-                reg2 = loadPlace(s.in2);
-                pushResult('SUB', reg1, reg2);
+                if (s.in2[0] === '$') {
+                    pushResult('SUB', reg1, s.in2.slice(1));
+                } else {
+                    reg2 = loadPlace(s.in2);
+                    pushResult('SUB', reg1, reg2);
+                    deallocReg(reg2);
+                }
                 storePlace(s.out, reg1);
                 deallocReg(reg1);
-                deallocReg(reg2);
             }
             break;
         case '*':
             registers['EAX'] = true;
             registers['EDX'] = true;
+            regLastData['EAX'] = null;
+            regLastData['EDX'] = null;
             reg1 = loadPlace(s.in1, 'EAX');
             reg2 = loadPlace(s.in2);
             pushResult('IMUL', reg2);
@@ -257,6 +319,8 @@ function x86Asm(intermediate) {
         case '%':
             registers['EAX'] = true;
             registers['EDX'] = true;
+            regLastData['EAX'] = null;
+            regLastData['EDX'] = null;
             pushResult('MOV', 'EDX', '0');
             reg1 = loadPlace(s.in1, 'EAX');
             reg2 = loadPlace(s.in2);
@@ -290,11 +354,23 @@ function x86Asm(intermediate) {
         case 'j>=':
             if (!op) op = 'JGE';
 
-            reg1 = loadPlace(s.in1);
-            reg2 = loadPlace(s.in2);
-            pushResult('CMP', reg1, reg2);
+            if (s.in2[0] === '$') {
+                reg1 = loadPlace(s.in1);
+                pushResult('CMP', reg1, s.in2.slice(1));
+            } else if (s.in1[0] === '$') {
+                reg1 = loadPlace(s.in2);
+                if (op[1] === 'L')
+                    op = op[0] + 'G' + op.slice(2);
+                else if (op[1] === 'G')
+                    op = op[0] + 'L' + op.slice(2);
+                pushResult('CMP', reg1, s.in1.slice(1));
+            } else {
+                reg1 = loadPlace(s.in1);
+                reg2 = loadPlace(s.in2);
+                pushResult('CMP', reg1, reg2);
+                deallocReg(reg2);
+            }
             deallocReg(reg1);
-            deallocReg(reg2);
             pushResult(op, 'L' + s.out);
             break;
         case 'in':

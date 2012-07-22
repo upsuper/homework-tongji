@@ -107,25 +107,31 @@ var PL0_SYNTAX = {
         expr: ['Identifier', /:=/, 'Expression'],
         rule: function (s, id, _as, e) {
             checkVar(this, id);
-            this.emit(':=', e.$.place, null, '%' + id.$.name);
+            if (e.$.outpos !== undefined)
+                this.backpatch([e.$.outpos], '%' + id.$.name);
+            else
+                this.emit(':=', e.$.place, null, '%' + id.$.name);
         }
     }],
     Expression: [{
         expr: ['Term'],
         rule: function (e, t) {
             e.$.place = t.$.place;
+            e.$.outpos = t.$.outpos;
         }
     }, {
         expr: [/[+-]/, 'Term'],
         rule: function (e, op, t) {
             op = op.text;
-            if (op === '+')
+            if (op === '+') {
                 e.$.place = t.$.place;
-            else {
+                e.$.outpos = t.$.outpos;
+            } else {
                 if (t.$.place[0] === '$')
                     e.$.place = '$' + -t.$.place.slice(1);
                 else {
                     e.$.place = '%' + this.newtemp();
+                    e.$.outpos = this.nextquad;
                     this.emit('-', t.$.place, null, e.$.place);
                 }
             }
@@ -146,6 +152,7 @@ var PL0_SYNTAX = {
                 e.$.place = '$' + result;
             } else {
                 e.$.place = '%' + this.newtemp();
+                e.$.outpos = this.nextquad;
                 this.emit(op, e1.$.place, t.$.place, e.$.place);
             }
         }
@@ -154,6 +161,7 @@ var PL0_SYNTAX = {
         expr: ['Factor'],
         rule: function (t, f) {
             t.$.place = f.$.place;
+            t.$.outpos = f.$.outpos;
         }
     }, {
         expr: ['Term', /[\*\/%]/, 'Factor'],
@@ -171,6 +179,7 @@ var PL0_SYNTAX = {
                 t.$.place = '$' + result;
             } else {
                 t.$.place = '%' + this.newtemp();
+                t.$.outpos = this.nextquad;
                 this.emit(op, t1.$.place, f.$.place, t.$.place);
             }
         }
@@ -195,6 +204,7 @@ var PL0_SYNTAX = {
         expr: [/\(/, 'Expression', /\)/],
         rule: function (f, _q1, e, _q2) {
             f.$.place = e.$.place;
+            f.$.outpos = e.$.outpos;
         }
     }],
     M: [{
