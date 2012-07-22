@@ -233,31 +233,25 @@ function nextStep() {
     finished = false;
 
     var p, error = false;
-    while (stack.length == frontend.reduced.length) {
-        try {
-            p = frontend.nextPhrase();
-            if (p)
-                frontend.callRule(p, intermediate);
-        } catch (e) {
-            showError(e);
-            error = true;
-        }
-        if (!p || error) {
-            $('#onestep').disabled = true;
-            $('#toimc').disabled = true;
-            if (!error)
-                $next.disabled = false;
-            if (error) {
-                finished = true;
-                return;
-            } else {
-                break;
-            }
-        } else {
-            curStart = p.start.pos;
-            curEnd = p.end.pos;
-        }
+    try {
+        p = frontend.nextPhrase();
+        if (p)
+            frontend.callRule(p, intermediate);
+    } catch (e) {
+        showError(e);
+        error = true;
     }
+    if (!p || error) {
+        $('#onestep').disabled = true;
+        $('#toimc').disabled = true;
+        if (!error)
+            $next.disabled = false;
+        finished = true;
+        return;
+    }
+
+    curStart = p.start.pos;
+    curEnd = p.end.pos;
 
     function checkTd($td, value) {
         if (value === null) {
