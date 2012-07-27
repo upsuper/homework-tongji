@@ -166,7 +166,7 @@ $next.addEventListener('click', function () {
             $('#intermediate>table>tbody').innerHTML = '';
             $('#properties>ul').innerHTML = '';
             intermediate = new Intermediate(100);
-            frontend.initTranslate($source.value);
+            frontend.initTranslate($source.value, true);
             stack = [null];
             $('#onestep').disabled = false;
             $('#toimc').disabled = false;

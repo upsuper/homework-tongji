@@ -304,6 +304,8 @@ Frontend.prototype.doAction = function (act) {
             this.reduced.push(this.next);
             this.stack.push(act.state);
             this.next = this.nextWord();
+            if (this.detailed)
+                ret = this.next;
             break;
         case 'reduce':
             var syntax = this.syntax[act.type][act.index];
@@ -381,7 +383,7 @@ Frontend.prototype.nextPhrase = function () {
     throw new SyntaxException(this);
 };
 
-Frontend.prototype.initTranslate = function (source) {
+Frontend.prototype.initTranslate = function (source, detailed) {
     this.source = source;
     this.left = source;
     this.pos = 0;
@@ -389,6 +391,7 @@ Frontend.prototype.initTranslate = function (source) {
     this.colume = 1;
     this.stack = [0];
     this.reduced = [null];
+    this.detailed = !!detailed;
     this.next = this.nextWord();
 };
 
@@ -437,6 +440,8 @@ Intermediate.prototype.toString = function () {
 };
 
 Frontend.prototype.callRule = function (p, result) {
+    if (p === null)
+        return;
     var rule = p.rule;
     if (typeof rule !== 'function')
         return;
@@ -446,8 +451,8 @@ Frontend.prototype.callRule = function (p, result) {
     rule.apply(result, args);
 };
 
-Frontend.prototype.translate = function (source) {
-    this.initTranslate(source);
+Frontend.prototype.translate = function (source, detailed) {
+    this.initTranslate(source, detailed);
 
     var result = new Intermediate(100);
     var p;
