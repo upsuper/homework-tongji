@@ -9,8 +9,6 @@ function $all(q, elem) {
 function $c(tag) {
     return document.createElement(tag);
 }
-function toHTML(text) {
-}
 
 String.prototype.toHTML = function () {
     return this.replace(/&/g, '&amp;')
