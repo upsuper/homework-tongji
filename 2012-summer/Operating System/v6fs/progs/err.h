@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-static inline void errmsg(char doexit, int excode, char adderr,
-		const char *fmt, ...)
+static inline void errmsg(const char *filename, char doexit, int excode,
+		char adderr, const char *fmt, ...)
 {
-	fprintf(stderr, "%s: ", __FILE__);
+	fprintf(stderr, "%s: ", filename);
 	if (fmt != NULL) {
 		va_list argp;
 		va_start(argp, fmt);
@@ -24,9 +24,9 @@ static inline void errmsg(char doexit, int excode, char adderr,
 		exit(excode);
 }
 
-#define err(E, FMT...)	errmsg(1, E, 1, FMT)
-#define errx(E, FMT...)	errmsg(1, E, 0, FMT)
-#define warn(FMT...)	errmsg(0, 0, 1, FMT)
-#define warnx(FMT...)	errmsg(0, 0, 0, FMT)
+#define err(F, E, FMT...)	errmsg(F, 1, E, 1, FMT)
+#define errx(F, E, FMT...)	errmsg(F, 1, E, 0, FMT)
+#define warn(F, FMT...)		errmsg(F, 0, 0, 1, FMT)
+#define warnx(F, FMT...)	errmsg(F, 0, 0, 0, FMT)
 
 #endif /* PROGS_V6FS_ERR_H */

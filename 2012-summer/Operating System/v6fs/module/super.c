@@ -244,7 +244,7 @@ static void __exit exit_v6fs_fs(void)
 	destroy_inodecache();
 }
 
-MODULE_AUTHOR("Xunzhen Quan <quanxunzhen@gmail.com");
+MODULE_AUTHOR("Xunzhen Quan <quanxunzhen@gmail.com>");
 MODULE_DESCRIPTION("Implementation of filesystem of UNIX v6 for Linux");
 MODULE_LICENSE("GPL");
 module_init(init_v6fs_fs)

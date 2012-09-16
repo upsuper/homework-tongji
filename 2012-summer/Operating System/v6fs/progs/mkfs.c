@@ -32,7 +32,7 @@
 #define MKFS_USAGE	1
 #define MKFS_ERROR	2
 
-#define VERBOSE(FMT...)	warnx(FMT)
+#define VERBOSE(FMT...)	warnx(__FILE__, FMT)
 
 static char * program_name = "mkfs.v6fs";
 
@@ -74,7 +74,7 @@ static void parse_arg(int argc, char *argv[])
 		case 'i':
 			inode_blocks = strtol(optarg, &p, 0);
 			if (*p)
-				errx(MKFS_ERROR,
+				errx(__FILE__, MKFS_ERROR,
 					"inode-blocks must be an integer");
 			break;
 		case 'v':
@@ -95,7 +95,7 @@ static void parse_arg(int argc, char *argv[])
 	if (argc > 0) {
 		blocks = strtol(argv[0], &p, 0);
 		if (*p)
-			errx(MKFS_ERROR, "blocks must be an integer");
+			errx(__FILE__, MKFS_ERROR, "blocks must be an integer");
 	}
 }
 
@@ -116,9 +116,9 @@ static void check_params_after(void)
 	if (verbose)
 		VERBOSE("checking blocks number...");
 	if (normal_blocks <= 100)
-		errx(MKFS_ERROR, "normal blocks must be not less than 100");
+		errx(__FILE__, MKFS_ERROR, "normal blocks must be not less than 100");
 	if (normal_blocks / inode_blocks < V6FS_INODE_PER_BLOCK)
-		errx(MKFS_ERROR, "too many inode blocks");
+		errx(__FILE__, MKFS_ERROR, "too many inode blocks");
 }
 
 static void check_mount(void)
@@ -136,7 +136,7 @@ static void check_mount(void)
 	endmntent(f);
 	if (!mnt)
 		return;
-	err(MKFS_ERROR, "%s is mounted; "
+	err(__FILE__, MKFS_ERROR, "%s is mounted; "
 			"will not make a filesystem here!", device_name);
 }
 
@@ -147,7 +147,7 @@ static void stat_dev(void)
 	if (verbose)
 		VERBOSE("stating device...");
 	if (stat(device_name, &statbuf) < 0)
-		err(MKFS_ERROR, "%s: stat failed", device_name);
+		err(__FILE__, MKFS_ERROR, "%s: stat failed", device_name);
 	is_blk = S_ISBLK(statbuf.st_mode);
 }
 
@@ -162,7 +162,7 @@ static void open_dev(void)
 	else
 		dev = open(device_name, O_RDWR);
 	if (dev < 0)
-		err(MKFS_ERROR, "%s: open failed", device_name);
+		err(__FILE__, MKFS_ERROR, "%s: open failed", device_name);
 
 	if (!blocks) {
 		if (verbose)
@@ -170,7 +170,7 @@ static void open_dev(void)
 		if (is_blk) {
 			tmp = ioctl(dev, BLKGETSIZE, &blocks);
 			if (tmp < 0)
-				err(MKFS_ERROR, "cannot determine size of %s",
+				err(__FILE__, MKFS_ERROR, "cannot determine size of %s",
 						device_name);
 			blocks = blocks * 512 / V6FS_BLOCK_SIZE;
 		} else {
@@ -180,7 +180,7 @@ static void open_dev(void)
 			VERBOSE("set blocks = %d", blocks);
 	}
 	if (blocks > V6FS_MAX_BLOCKS) {
-		warnx("will only use %u blocks", V6FS_MAX_BLOCKS);
+		warnx(__FILE__, "will only use %u blocks", V6FS_MAX_BLOCKS);
 		blocks = V6FS_MAX_BLOCKS;
 	}
 
@@ -197,10 +197,10 @@ static void write_block(int blk, char * buffer)
 	if (verbose)
 		VERBOSE("writing block %d...", blk);
 	if (lseek(dev, blk * V6FS_BLOCK_SIZE, SEEK_SET) < 0)
-		err(MKFS_ERROR, "%s: seek failed in write_block",
+		err(__FILE__, MKFS_ERROR, "%s: seek failed in write_block",
 				device_name);
 	if (write_all(dev, buffer, V6FS_BLOCK_SIZE))
-		err(MKFS_ERROR, "%s: write failed in write_block",
+		err(__FILE__, MKFS_ERROR, "%s: write failed in write_block",
 				device_name);
 }
 
