@@ -1,5 +1,5 @@
-LINUX_SRC=/usr/src/linux-$(shell uname -r)
-MAKE_MOD=$(MAKE) -C $(LINUX_SRC) SUBDIRS=$(PWD)/module 
+KDIR=/lib/modules/$(shell uname -r)/build
+MAKE_MOD=$(MAKE) -C $(KDIR) M=$(PWD)/module 
 
 all: module progs
 

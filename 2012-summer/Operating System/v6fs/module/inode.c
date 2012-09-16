@@ -241,7 +241,7 @@ void v6fs_evict_inode(struct inode *inode)
 			v6fs_truncate_blocks(inode, 0);
 	}
 	invalidate_inode_buffers(inode);
-	end_writeback(inode);
+	clear_inode(inode);
 	if (!inode->i_nlink)
 		v6fs_free_inode(inode);
 }
