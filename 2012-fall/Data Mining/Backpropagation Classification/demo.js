@@ -21,7 +21,7 @@
         HEIGHT = 500,
         DELAY = 20,
         EPOCH_STEP = 50,
-        MAX_EPOCH = 20000;
+        MAX_EPOCH = 10000;
     var current = 0,
         dataSet = [],
         backpropagation;
@@ -32,7 +32,7 @@
         trainedCtx = $trained.getContext('2d'),
         graphCtx = $graph.getContext('2d');
     var $progress = $('progress');
-    var b;
+    var b, minX, minY, maxX, maxY;
 
     var offsetTop, offsetLeft;
     switchCanvas($origin);
@@ -93,14 +93,21 @@
     });
     $('train').bind('click', function () {
         var hiddenNum = parseInt($('hidden_layer').value);
-        if (!b || !needContinue || !confirm('continue?'))
-            b = new Backprogation([2, hiddenNum, 1]);
+        var $result = $('result');
+        if (!dataSet.length) {
+            $result.style.color = 'red';
+            $result.textContent = 'No Data!';
+            return;
+        }
 
+        $progress.value = '0';
         $progress.show();
         $('result').textContent = '';
         $q('button, input').forEach(function (elem) {
             elem.disabled = true;
         });
+        $result.textContent = '';
+
         switchCanvas($trained);
         for (var i = 0; i < dataSet.length; i++) {
             var j = Math.floor(Math.random() * dataSet.length);
@@ -108,8 +115,20 @@
             dataSet[i] = dataSet[j];
             dataSet[j] = tmp;
         }
+        minX = minY = 100;
+        maxX = maxY = 0;
+        for (var i = 0; i < dataSet.length; i++) {
+            var x = dataSet[i][0],
+                y = dataSet[i][1];
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+
+        if (!b || !needContinue || !confirm('continue?'))
+            b = new Backprogation([2, hiddenNum, 1]);
         nextEpoch(MAX_EPOCH, function (reason) {
-            var $result = $('result');
             $progress.hide();
             switch (reason) {
                 case 'achieve':
@@ -146,6 +165,7 @@
 
             var startTime = (new Date()).getTime(),
                 endTime;
+
             clearCanvas(trainedCtx);
             var diff = 0;
             for (var i = 0; i < dataSet.length; i++) {
@@ -158,7 +178,7 @@
 
             // TODO check local minimum
             diff /= dataSet.length;
-            if (diff <= 1e-3) {
+            if (diff <= 0.5e-3) {
                 callback('achieve');
                 return;
             }
@@ -216,7 +236,8 @@
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
     }
     function prefeed(data) {
-        return [data[0] / 100, data[1] / 100];
+        return [(data[0] - minX) / (maxX - minX),
+                (data[1] - minY) / (maxY - minY)];
     }
     function result2color(result) {
         var color = Math.round(255 * (1 - Math.abs(result * 2 - 1)));
