@@ -125,6 +125,8 @@
             minY = Math.min(minY, y);
             maxY = Math.max(maxY, y);
         }
+        if (maxX - minX < 1) maxX = minX + 1;
+        if (maxY - minY < 1) maxY = minY + 1;
 
         if (!b || !needContinue || !confirm('continue?'))
             b = new Backprogation([2, hiddenNum, 1]);
