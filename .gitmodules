@@ -1,6 +1,9 @@
-[submodule "2012-spring/Web Technology/white"]
+[submodule "white"]
 	path = 2012-spring/Web Technology/white
 	url = git@github.com:upsuper/white.git
-[submodule "2012-summer/Database System/udiscuss"]
+[submodule "udiscuss"]
 	path = 2012-summer/Database System/udiscuss
 	url = git@github.com:upsuper/udiscuss.git
+[submodule "power-supply"]
+	path = 2011-fall/Software Engineering/power-supply
+	url = git@github.com:upsuper/power-supply.git
