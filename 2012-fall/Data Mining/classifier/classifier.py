@@ -8,21 +8,22 @@ from math import log
 from pprint import pprint
 from collections import defaultdict
 
-log2 = lambda x: log(x, 2)
+def count_attr(attr, data):
+    result = defaultdict(int)
+    for item in data:
+        result[item[attr]] += item[COUNT_ATTR]
+    return result
 
 def select_attr(data, attrs):
     max_ig = 0.0
     result = ''
     for attr in attrs:
-        value_count = defaultdict(int)
-        for item in data:
-            value_count[item[attr]] += item[COUNT_ATTR]
+        value_count = count_attr(attr, data)
         count_sum = sum(value_count.values())
         info_gain = 0.0
         for v in value_count.values():
             p = float(v) / count_sum
-            info_gain += p * log2(p)
-        info_gain = -info_gain
+            info_gain -= p * log(p, 2)
 
         if info_gain > max_ig:
             max_ig = info_gain
@@ -39,9 +40,7 @@ def generate_tree(data, attrs):
         return class_
     
     if not attrs:
-        vote = defaultdict(int)
-        for item in data:
-            vote[item[CLASS_ATTR]] += item[COUNT_ATTR]
+        vote = count_attr(CLASS_ATTR, data)
         max_vote = 0
         for k, v in vote.items():
             if v > max_vote:
@@ -61,12 +60,11 @@ def generate_tree(data, attrs):
     return criterion, splitting
 
 def classify(tree, item):
-    if isinstance(tree, str):
-        return tree
-    attr, subtree = tree
-    if item[attr] not in subtree:
-        return None
-    return classify(subtree[item[attr]], item)
+    while tree:
+        if isinstance(tree, str):
+            return tree
+        attr, subtree = tree
+        tree = subtree.get(item[attr], None)
 
 def read_data(f):
     f = open(f, 'r')
@@ -90,7 +88,7 @@ if __name__ == '__main__':
     pprint(tree)
 
     print
-    print 'Input items to classify:'
+    print 'Input items:'
     print '\t'.join(attrs)
     while True:
         try:
