@@ -1,0 +1,20 @@
+graph {
+    {
+        node [style=rounded, shape=box]
+        salary [label="salary?"]
+        age [label="age?"]
+    }
+    { node [label=junior] junior1 junior2 junior3 junior4 junior5 }
+    { node [label=senior] senior1 senior2 senior3 senior4 }
+    salary -- junior1 [label="26K...30K"]
+    salary -- junior2 [label="31K...35K"]
+    salary -- senior1 [label="36K...40K"]
+    salary -- junior3 [label="41K...45K"]
+    salary -- age     [label="46K...50K"]
+    salary -- senior2 [label="66K...70K"]
+    age -- junior4 [label="21...25"]
+    age -- junior5 [label="26...30"]
+    age -- senior3 [label="31...35"]
+    age -- senior4 [label="36...40"]
+    ordering=out
+}
